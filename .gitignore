@@ -20,3 +20,8 @@ bindata.go
 
 # User Specific
 .vscode/
+
+# Vagrant
+.vagrant/
+*.tar.zst
+*.tar
