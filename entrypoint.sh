@@ -24,6 +24,18 @@ if [ -z "${SUBSPACE_NAMESERVERS-}" ]; then
   export SUBSPACE_NAMESERVERS="1.1.1.1,1.0.0.1"
 fi
 
+if [ -z "${SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP4-}" ]; then
+  export SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP4=""
+fi
+
+if [ -z "${SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP6-}" ]; then
+  export SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP6=""
+fi
+
+if [ -z "${SUBSPACE_LINK_LOCAL_DOMAIN-}" ]; then
+  export SUBSPACE_LINK_LOCAL_DOMAIN=""
+fi
+
 if [ -z "${SUBSPACE_LETSENCRYPT-}" ]; then
   export SUBSPACE_LETSENCRYPT="true"
 fi
@@ -74,6 +86,13 @@ if ! [ -z "${SUBSPACE_DISABLE_DNS-}" ] && [ "${SUBSPACE_DISABLE_DNS}" != "0" ]; 
   export SUBSPACE_DISABLE_DNS=1
 else
   export SUBSPACE_DISABLE_DNS=0
+fi
+
+# LL DNS server is disabled if the flag is not ommited and set to anything other than 0.
+if ! [ -z "${SUBSPACE_DISABLE_LINK_LOCAL_DNS-}" ] && [ "${SUBSPACE_DISABLE_LINK_LOCAL_DNS}" != "0" ]; then
+  export SUBSPACE_DISABLE_LINK_LOCAL_DNS=1
+else
+  export SUBSPACE_DISABLE_LINK_LOCAL_DNS=0
 fi
 
 if [ "$SUBSPACE_IPV6_NAT_ENABLED" == "0" ] && [ "$SUBSPACE_IPV4_NAT_ENABLED" == "0" ]; then

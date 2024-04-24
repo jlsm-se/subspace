@@ -462,6 +462,22 @@ func profileAddHandler(w *Web) {
 	if shouldDisableDNS := getEnv("SUBSPACE_DISABLE_DNS", "0"); shouldDisableDNS == "1" {
 		disableDNS = true
 	}
+	disableLinkLocalDNS := true
+	if shouldDisableLinkLocalDNS := getEnv("SUBSPACE_DISABLE_LINK_LOCAL_DNS", "1"); shouldDisableLinkLocalDNS == "0" {
+		disableLinkLocalDNS = false
+	}
+	linkLocalDNSServers4 := []string{"10.99.99.1"}
+	if lldnss4 := getEnv("SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP4", "nil"); lldnss4 != "nil" {
+		linkLocalDNSServers4 = strings.Fields(lldnss4)
+	}
+	linkLocalDNSServers6 := []string{"fd00::10:97:1"}
+	if lldnss6 := getEnv("SUBSPACE_LINK_LOCAL_DNS_SERVERS_IP6", "nil"); lldnss6 != "nil" {
+		linkLocalDNSServers6 = strings.Fields(lldnss6)
+	}
+	linkLocalDomain := "vpn.internal"
+	if lld := getEnv("SUBSPACE_LINK_LOCAL_DOMAIN", "nil"); lld != "nil" {
+		linkLocalDomain = lld
+	}
 	persistentKeepalive := "0"
 	if keepalive := getEnv("SUBSPACE_PERSISTENT_KEEPALIVE", "nil"); keepalive != "nil" {
 		persistentKeepalive = keepalive
@@ -486,6 +502,22 @@ PrivateKey = ${wg_private_key}
 {{- if not .DisableDNS }}
 DNS = {{if .Ipv4Enabled}}{{$.IPv4Gw}}{{end}}{{if .Ipv6Enabled}}{{if .Ipv4Enabled}},{{end}}{{$.IPv6Gw}}{{end}}
 {{- end }}
+
+{{- if not .DisableLinkLocalDNS }}
+{{- if .LinkLocalDomain }}
+{{if eq .Platform "windows" }}
+{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers4 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
+{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers6 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
+{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostDown = powershell -command "Get-DnsClientNrptRule | Where { $_.Namespace -match '.*{{$.LinkLocalDomain}}' } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
+{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostDown = powershell -command "Get-DnsClientNrptRule | Where { $_.Namespace -match '.*{{$.LinkLocalDomain}}' } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
+{{- end }}
+{{if eq .Platform "linux" }}
+{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostUp = resolvectl dns %i {{ range .LinkLocalDNSServers4 }}{{ . }} {{ end }}; resolvectl domain %i "{{$.LinkLocalDomain}}"{{end}}{{end}}
+{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostUp = resolvectl dns %i {{ range .LinkLocalDNSServers6 }}{{ . }} {{ end }}; resolvectl domain %i "{{$.LinkLocalDomain}}"{{end}}{{end}}
+{{- end }}
+{{- end }}
+{{- end }}
+
 Address = {{if .Ipv4Enabled}}{{$.IPv4Pref}}{{$.Profile.Number}}/{{$.IPv4Cidr}}{{end}}{{if .Ipv6Enabled}}{{if .Ipv4Enabled}},{{end}}{{$.IPv6Pref}}{{$.Profile.Number}}/{{$.IPv6Cidr}}{{end}}
 
 [Peer]
@@ -511,6 +543,11 @@ WGCLIENT
 		Ipv4Enabled  		bool
 		Ipv6Enabled  		bool
 		DisableDNS   		bool
+		DisableLinkLocalDNS	bool
+		LinkLocalDNSServers4	[]string
+		LinkLocalDNSServers6	[]string
+		LinkLocalDomain		string
+		Platform		string
 		PersistentKeepalive string
 	}{
 		profile,
@@ -527,6 +564,11 @@ WGCLIENT
 		ipv4Enabled,
 		ipv6Enabled,
 		disableDNS,
+		disableLinkLocalDNS,
+		linkLocalDNSServers4,
+		linkLocalDNSServers6,
+		linkLocalDomain,
+		platform,
 		persistentKeepalive,
 	})
 	if err != nil {
