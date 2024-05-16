@@ -506,10 +506,10 @@ DNS = {{if .Ipv4Enabled}}{{$.IPv4Gw}}{{end}}{{if .Ipv6Enabled}}{{if .Ipv4Enabled
 {{- if not .DisableLinkLocalDNS }}
 {{- if .LinkLocalDomain }}
 {{if eq .Platform "windows" }}
-{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers4 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
-{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers6 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
-{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostDown = powershell -command "Get-DnsClientNrptRule | Where { $_.Namespace -match '.*{{$.LinkLocalDomain}}' } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
-{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostDown = powershell -command "Get-DnsClientNrptRule | Where { $_.Namespace -match '.*{{$.LinkLocalDomain}}' } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
+{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '.{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers4 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
+{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostUp = powershell -command "Add-DnsClientNrptRule -Namespace '.{{$.LinkLocalDomain}}' -NameServers {{range $i, $el := .LinkLocalDNSServers6 }}{{if $i}},{{end}}'{{$el}}'{{end}}"{{end}}{{end}}
+{{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostDown = powershell -command "\$d = [System.Text.RegularExpressions.Regex]::Escape('.{{$.LinkLocalDomain}}') ; Get-DnsClientNrptRule | Where { \$_.Namespace -match \$d } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
+{{if .Ipv6Enabled}}{{ if .LinkLocalDNSServers6 }}PostDown = powershell -command "\$d = [System.Text.RegularExpressions.Regex]::Escape('.{{$.LinkLocalDomain}}') ; Get-DnsClientNrptRule | Where { \$_.Namespace -match \$d } | Remove-DnsClientNrptRule -force"{{end}}{{end}}
 {{- end }}
 {{if eq .Platform "linux" }}
 {{if .Ipv4Enabled}}{{ if .LinkLocalDNSServers4 }}PostUp = resolvectl dns %i {{ range .LinkLocalDNSServers4 }}{{ . }} {{ end }}; resolvectl domain %i "{{$.LinkLocalDomain}}"{{end}}{{end}}
