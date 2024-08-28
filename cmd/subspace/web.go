@@ -325,7 +325,7 @@ func (w *Web) SignoutSession() {
 }
 
 func (w *Web) SigninSession(admin bool, userID string) error {
-	expires := time.Now().Add(12 * time.Hour)
+	expires := time.Now().Add(1 * time.Hour)
 
 	encoded, err := securetoken.Encode(SessionCookieName, Session{
 		Admin:     admin,
