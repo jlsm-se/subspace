@@ -247,7 +247,8 @@ fi
 # subspace service
 if ! test -d /etc/service/subspace; then
   mkdir /etc/service/subspace
-  cat <<RUNIT >/etc/service/subspace/run
+fi
+cat <<RUNIT >/etc/service/subspace/run
 #!/bin/sh
 source /etc/envvars
 exec /usr/bin/subspace \
@@ -258,16 +259,16 @@ exec /usr/bin/subspace \
     "--letsencrypt=${SUBSPACE_LETSENCRYPT}" \
     "--theme=${SUBSPACE_THEME}"
 RUNIT
-  chmod +x /etc/service/subspace/run
+chmod +x /etc/service/subspace/run
 
-  # subspace service log
-  mkdir /etc/service/subspace/log
-  mkdir /etc/service/subspace/log/main
-  cat <<RUNIT >/etc/service/subspace/log/run
+# subspace service log
+test -d /etc/service/subspace/log || mkdir /etc/service/subspace/log
+test -d /etc/service/subspace/log/main || mkdir /etc/service/subspace/log/main
+cat <<RUNIT >/etc/service/subspace/log/run
 #!/bin/sh
 exec svlogd -tt ./main
 RUNIT
-  chmod +x /etc/service/subspace/log/run
-fi
+
+chmod +x /etc/service/subspace/log/run
 
 exec $@
