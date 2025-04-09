@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine as build
+FROM golang:1.23-alpine AS build
 
 RUN apk add --no-cache \
     git \
@@ -25,7 +25,7 @@ COPY --from=build  /src/subspace /usr/bin/subspace
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY bin/my_init /sbin/my_init
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN chmod +x /usr/bin/subspace /usr/local/bin/entrypoint.sh /sbin/my_init
 
