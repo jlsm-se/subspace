@@ -1,8 +1,8 @@
 module github.com/subspacecommunity/subspace
 
-go 1.23.0
+go 1.25.3
 
-toolchain go1.23.6
+toolchain go1.25.3
 
 require (
 	github.com/crewjam/saml v0.4.14
