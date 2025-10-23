@@ -63,7 +63,7 @@ fi
 SUBSPACEBUILD
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento-ubuntu-22.04-amd64"
+  config.vm.box = "bento-ubuntu-24.04-amd64"
 
   config.vm.box_check_update = false
 
