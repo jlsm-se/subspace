@@ -36,10 +36,15 @@ $container_engine = <<-CNTENGINE
 sudo apt-get install -y ca-certificates curl gnupg
 [ -s /etc/apt/keyrings/docker.gpg ] || curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
-[ -s /etc/apt/sources.list.d/docker.list ] || {
-  echo "deb [arch="amd64" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+[ -s /etc/apt/sources.list.d/docker.sources ] || {
+  echo "Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: noble
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.gpg" | sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null
 }
 sudo apt-get update
+sudo apt-get upgrade -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 sudo usermod -aG docker vagrant
 echo "{ \\"log-driver\\": \\"local\\", \\"insecure-registries\\" : [ \\"localhost:4000\\" ] }" | sudo tee /etc/docker/daemon.json
