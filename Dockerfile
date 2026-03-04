@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine3.22 AS build
+FROM golang:1.25.7-alpine3.23@sha256:724e212d86d79b45b7ace725b44ff3b6c2684bfd3131c43d5d60441de151d98e AS build
 
 RUN apk add --no-cache \
     git \
@@ -18,7 +18,7 @@ ENV GODEBUG="netdns=go http2server=0"
 
 RUN make build BUILD_VERSION=${BUILD_VERSION}
 
-FROM alpine:3.22
+FROM alpine:3.23.3@sha256:59855d3dceb3ae53991193bd03301e082b2a7faa56a514b03527ae0ec2ce3a95
 LABEL maintainer="github.com/subspacecommunity/subspace"
 
 COPY --from=build  /src/subspace /usr/bin/subspace
