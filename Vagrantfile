@@ -23,7 +23,7 @@ NOSNAPS
 
 $dist_upgrade = <<-DISTUPGRADE
 sudo apt-get update
-sudo apt-get dist-upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y
 DISTUPGRADE
 
 $containers_in_tmpfs = <<-CNTTMPFS
@@ -44,8 +44,8 @@ Components: stable
 Signed-By: /etc/apt/keyrings/docker.gpg" | sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null
 }
 sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 sudo usermod -aG docker vagrant
 echo "{ \\"log-driver\\": \\"local\\", \\"insecure-registries\\" : [ \\"localhost:4000\\" ] }" | sudo tee /etc/docker/daemon.json
 sudo systemctl restart docker
@@ -60,9 +60,10 @@ CNTREGISTRY
 $subspacebuild = <<-SUBSPACEBUILD
 cd ~/subspace-buildroot/
 export GIT_COMMIT_DESCRIBED=$(git describe --tags HEAD)
-TZ=UTC docker build -t $1/$2/subspace:amd64-${GIT_COMMIT_DESCRIBED}-$(TZ=UTC date +%Y%m%d-%H%M%Z) .
+BUILD_TIMESTAMP="$(TZ=UTC date +%Y%m%d-%H%M%Z)"
+TZ=UTC docker build -t $1/$2/subspace:amd64-${GIT_COMMIT_DESCRIBED}-$BUILD_TIMESTAMP .
 if [ "$3" == "true" ] ; then
-  TAG="$(docker image ls --format "{{.Tag}}" -f "reference=$1/$2/subspace")"
+  TAG="$(docker image ls --format "{{.Tag}}" -f "reference=$1/$2/subspace" | grep "$BUILD_TIMESTAMP" | tail -n1)"
   docker image save "$1/$2/subspace:$TAG" | zstd -T0 -c > "./${2}-subspace-${TAG}.tar.zst"
 fi
 SUBSPACEBUILD
